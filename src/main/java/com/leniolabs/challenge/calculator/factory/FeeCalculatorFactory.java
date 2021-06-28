@@ -1,6 +1,5 @@
 package com.leniolabs.challenge.calculator.factory;
 
-
 import com.leniolabs.challenge.calculator.FeeCalculatorIF;
 import com.leniolabs.challenge.custom.AccountType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+
 @Component
 public class FeeCalculatorFactory {
 
     @Autowired
     private Set<FeeCalculatorIF> feeCalculatorsSet;
-    
+
     private static final Map<String, FeeCalculatorIF> feeCalculatorsMap = new HashMap<>();
 
 
