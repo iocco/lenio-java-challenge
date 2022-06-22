@@ -2,36 +2,36 @@ package com.leniolabs.challenge.calculator.factory;
 
 import com.leniolabs.challenge.calculator.FeeCalculatorIF;
 import com.leniolabs.challenge.custom.AccountType;
+import com.leniolabs.challenge.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Component
 public class FeeCalculatorFactory {
 
+    private final Map<String, FeeCalculatorIF> feeCalculators;
+
     @Autowired
-    private Set<FeeCalculatorIF> feeCalculatorsSet;
-
-    private static final Map<String, FeeCalculatorIF> feeCalculatorsMap = new HashMap<>();
-
-
-    @PostConstruct
-    public void initFeeCalculatorImpl() {
-        feeCalculatorsSet.forEach(feeCalculator -> {
-            feeCalculatorsMap.put(feeCalculator.getClass().getAnnotation(AccountType.class).value(), feeCalculator);
-        });
+    public FeeCalculatorFactory(List<FeeCalculatorIF> feeCalculators) {
+        // Map all the feeCalculators by the Account Type annotation value
+        this.feeCalculators = feeCalculators.stream().collect(Collectors.toMap(
+                calculator -> calculator.getClass().getAnnotation(AccountType.class).value(), Function.identity()
+        ));
     }
 
-    public FeeCalculatorIF getFeeCalculatorImpl(String accountType) {
-        FeeCalculatorIF feeCalculator = feeCalculatorsMap.get(accountType);
-        if(feeCalculator == null) {
-            throw new IllegalArgumentException("Unknown fee calculator impl type: " + accountType);
+    public Optional<FeeCalculatorIF> getCalculator(Optional<Account> optionalAccount) {
+        if(optionalAccount.isPresent()) {
+            String type = optionalAccount.get().getAccountType();
+            return Optional.ofNullable(feeCalculators.get(type));
         }
-        return feeCalculator;
+        return Optional.empty();
     }
+
 }

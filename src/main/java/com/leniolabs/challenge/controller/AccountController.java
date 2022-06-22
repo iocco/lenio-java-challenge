@@ -1,5 +1,6 @@
 package com.leniolabs.challenge.controller;
 
+import com.leniolabs.challenge.calculator.FeeCalculatorIF;
 import com.leniolabs.challenge.calculator.factory.FeeCalculatorFactory;
 import com.leniolabs.challenge.model.Account;
 import com.leniolabs.challenge.service.AccounServiceIF;
@@ -27,12 +28,14 @@ public class AccountController {
     }
 
     @GetMapping(value = "/calculate-fee/{id}")
-    public ResponseEntity<Double> calculateFee(@PathVariable String id) throws Exception {
-        Optional<Account> account = accountControllerService.findById(id);
-        if(!account.isPresent()) {
-            throw new Exception("Account not found");
-        }
-        Double fee = feeCalculatorFactory.getFeeCalculatorImpl(account.get().getAccountType()).calculateFee();
-        return ResponseEntity.ok(fee);
+    public ResponseEntity<Double> calculateFee(@PathVariable String id) {
+        Optional<Account> optionalAccount = accountControllerService.findById(id);
+            Optional<FeeCalculatorIF> feeCalculatorIFOptional = feeCalculatorFactory.getCalculator(optionalAccount);
+            if(feeCalculatorIFOptional.isPresent()) {
+                FeeCalculatorIF feeCalculator = feeCalculatorIFOptional.get();
+                return ResponseEntity.ok(feeCalculator.calculateFee());
+            }
+        // If accounts or the fee for that type does not exist, return not found
+        return ResponseEntity.notFound().build();
     }
 }
